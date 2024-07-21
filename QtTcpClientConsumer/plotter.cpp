@@ -40,8 +40,6 @@ void Plotter::paintEvent(QPaintEvent *event) {
     // Normalizando os dados:
     qint64 minTime = *std::min_element(m_timeVector.begin(), m_timeVector.end()); // Encontra o menor valor de tempo
     qint64 maxTime = *std::max_element(m_timeVector.begin(), m_timeVector.end()); // Encontra o maior valor de tempo
-    float minValue = *std::min_element(m_floatVector.begin(), m_floatVector.end()); // Encontra o menor valor de float
-    float maxValue = *std::max_element(m_floatVector.begin(), m_floatVector.end()); // Encontra o maior valor de float
 
     // Ajustando os pontos para se ajustarem ao widget
     QVector<QPointF> points; // Vetor que armazenará os pontos normalizados
@@ -49,9 +47,8 @@ void Plotter::paintEvent(QPaintEvent *event) {
         // Normalizando x para o intervalo [0, width()]
         float normalizedX = (m_timeVector[i] - minTime) * width() / (maxTime - minTime);
 
-
-        // Normalizando y para o intervalo [0, height()]
-        float normalizedY = height() - (m_floatVector[i] - minValue) * height() / (maxValue - minValue); // Invertido porque a origem é no canto superior esquerdo
+        // Normalizando y para o intervalo [0, height()] considerando que os valores de m_floatVector estão no intervalo [0, 99]
+        float normalizedY = height() - (m_floatVector[i] * height() / 99.0); // Invertido porque a origem é no canto superior esquerdo
 
         points.append(QPointF(normalizedX, normalizedY)); // Depois de normalizado, adicionando o ponto ao vetor
     }

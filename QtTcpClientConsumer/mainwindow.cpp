@@ -71,7 +71,7 @@ void MainWindow::tcpDisconnect() {
     timer->stop();
 }
 
-//Implementação da função membro  que recebe so horizontal slider qual devrá ser a velocidade de requisições ao servidor
+//Implementação da função membro  que recebe so horizontal slider qual deverá ser a velocidade de requisições ao servidor
 void MainWindow::setTimerInterval(int interval) {
     timer->setInterval(interval);
 }
@@ -114,7 +114,6 @@ void MainWindow::update() {
 void MainWindow::getIp(QListWidgetItem *_ipselect) {
     ipselect = _ipselect->text();
     ipselect = "get " + ipselect + " 30\r\n";
-    qDebug() << "Ip selecionado: " << ipselect;
 }
 
 //Implementação da função membro  que solicita os dados e os recebe
@@ -141,7 +140,6 @@ void MainWindow::getData() {
                     timeVector.append(thetime);
                     float floatValue = str.toFloat(&ok); // convertendo str para float (para a plotagem
                     floatVector.append(floatValue); //passa os valores convertidos para o vetor
-                    //qDebug() << thetime << ": " << str;
                 }
             }
         }
