@@ -3,164 +3,171 @@
 #include <QDateTime>
 #include <QTimerEvent>
 #include <QLineEdit>
+#include <QVector>
 
 MainWindow::MainWindow(QWidget *parent) :
-  QMainWindow(parent),
-  ui(new Ui::MainWindow)
+    QMainWindow(parent),
+    ui(new Ui::MainWindow)
 {
-  ui->setupUi(this);
-  socket = new QTcpSocket(this);
-  timer = new QTimer(this); // Inicializando o timer
+    ui->setupUi(this);
+    socket = new QTcpSocket(this);
+    timer = new QTimer(this); // Inicializando o timer
+    plotter = ui->widget; // Inicializando a classe Plotter
+
+    // Conexão do timer ao slot getData
+    connect(timer, &QTimer::timeout, this, &MainWindow::getData);
+
+    connect(ui->pushButtonGet,
+            SIGNAL(clicked(bool)),
+            this,
+            SLOT(getData()));
+
+    // Conexão do botão connect com o slot responsável por conectar-se ao servidor
+    connect(ui->pushButtonConnect,
+            SIGNAL(clicked(bool)),
+            this,
+            SLOT(tcpConnect()));
+
+    // Conexão do botão disconnect com o slot responsável por disconectar-se do servidor
+    connect(ui->pushButtonDisconnect,
+            SIGNAL(clicked(bool)),
+            this,
+            SLOT(tcpDisconnect()));
+
+    // Conexão do botão start com o slot responsável por iniciar o envio de dados
+    connect(ui->pushButtonStart,
+            SIGNAL(clicked(bool)),
+            this,
+            SLOT(startSending()));
+
+    // Conexão do botão stop com o slot responsável por parar o envio de dados
+    connect(ui->pushButtonStop,
+            SIGNAL(clicked(bool)),
+            this,
+            SLOT(stopSending()));
 
 
-  // Conexão do timer ao slot putData
-  connect(timer, &QTimer::timeout, this, &MainWindow::getData);
-  //tcpConnect();
+    // Conexão do botão update
+    connect(ui->pushButtonUpdate,
+            SIGNAL(clicked(bool)),
+            this,
+            SLOT(update()));
 
-  connect(ui->pushButtonGet,
-          SIGNAL(clicked(bool)),
-          this,
-          SLOT(getData()));
-
-  // Conexão do botão connect com o slot responsável por conectar-se ao servidor
-  connect(ui->pushButtonConnect,
-          SIGNAL(clicked(bool)),
-          this,
-          SLOT(tcpConnect()));
-
-  // Conexão do botão disconnect com o slot responsável por disconectar-se do servidor
-  connect(ui->pushButtonDisconnect,
-          SIGNAL(clicked(bool)),
-          this,
-          SLOT(tcpDisconnect()));
-
-  // Conexão do botão start com o slot responsável por iniciar o envio de dados
-  connect(ui->pushButtonStart,
-          SIGNAL(clicked(bool)),
-          this,
-          SLOT(startSending()));
-
-  // Conexão do botão stop com o slot responsável por parar o envio de dados
-  connect(ui->pushButtonStop,
-          SIGNAL(clicked(bool)),
-          this,
-          SLOT(stopSending()));
+    // Conexão do slider de intervalo com o slot responsável por tratar o timer de envio de dados
+    connect(ui->horizontalSliderTiming,
+            SIGNAL(valueChanged(int)),
+            this,
+            SLOT(setTimerInterval(int)));
 
 
-  // Conexão do botão update
-  connect(ui->pushButtonUpdate,
-          SIGNAL(clicked(bool)),
-          this,
-          SLOT(update()));
 
-  // Conexão do slider de intervalo com o slot responsável por tratar o timer de envio de dados
-  connect(ui->horizontalSliderTiming,
-          SIGNAL(valueChanged(int)),
-          this,
-          SLOT(setTimerInterval(int)));
 
 }
 
-
-//implementação do método que faz a conexão com o servidor
-void MainWindow::tcpConnect(){
-  QString ipservidor = ui->lineEditIp->text();
-  socket->connectToHost(ipservidor,1234);
-  if(socket->waitForConnected(3000)){
-    qDebug() << "Connected";
-  }
-  else{
-    qDebug() << "Disconnected";
-  }
+void MainWindow::tcpConnect() {
+    QString ipservidor = ui->lineEditIp->text();
+    socket->connectToHost(ipservidor, 1234);
+    if (socket->waitForConnected(3000)) {
+        qDebug() << "Connected";
+    } else {
+        qDebug() << "Disconnected";
+    }
 }
 
-//Implementação do método responsável por de desconectar do servidor
 void MainWindow::tcpDisconnect() {
     socket->disconnectFromHost();
-   timer->stop(); // para o timer para que ao se reconectar o pedido de dados não esteja engatilhado
+    timer->stop();
 }
 
-//Implementação do método que trata o intervalo entre uma requisição e outra.
 void MainWindow::setTimerInterval(int interval) {
     timer->setInterval(interval);
 }
 
-//Implementação do método que trata o timer para que os dados possam ser enviados ao servidor
 void MainWindow::startSending() {
-    if(!ipselect.isEmpty()){ //verifica se o ip do cliente produtor foi selecionado.
+    if (!ipselect.isEmpty()) {
         timer->start();
     }
 }
 
-//Implementação do método que para o timer de envio dos dados ao servidor
 void MainWindow::stopSending() {
     timer->stop();
 }
 
-//Implementação do método que atualiza a lista de clientes produtores de dados
-void MainWindow::update(){
+void MainWindow::update() {
     QStringList iplist;
-    if(socket->state() == QAbstractSocket::ConnectedState){
-        if(socket->isOpen()){
+    if (socket->state() == QAbstractSocket::ConnectedState) {
+        if (socket->isOpen()) {
             qDebug() << "reading...";
             socket->write("list\r\n");
-            socket->waitForBytesWritten(); //aguarda até que os bytes sejam escritos
-            socket->waitForReadyRead(); //aguarda até que haja uma resposta disponível para leitura
-            //qDebug() << socket->bytesAvailable();
-            ui->listWidget->clear(); //limpa o listwidget antes de atualizar
+            socket->waitForBytesWritten();
+            socket->waitForReadyRead();
+            ui->listWidget->clear();
             iplist.clear();
-            while(socket->bytesAvailable()){
-                iplist << socket->readLine().replace("\n","").replace("\r","");
-                qDebug() << "Connected IP: " << iplist; //recebendo ip
-                ui->listWidget->addItems(iplist); //mandando os ips para o listwidget
+            while (socket->bytesAvailable()) {
+                iplist << socket->readLine().replace("\n", "").replace("\r", "");
+                qDebug() << "Connected IP: " << iplist;
+                ui->listWidget->addItems(iplist);
+            }
+        }
+    } else {
+        qDebug() << "Você não está conectado a nenhum servidor";
+    }
+}
 
+void MainWindow::getIp(QListWidgetItem *_ipselect) {
+    ipselect = _ipselect->text();
+    ipselect = "get " + ipselect + " 30\r\n";
+    qDebug() << "Ip selecionado: " << ipselect;
+}
+
+void MainWindow::getData() {
+    QStringList list;
+    qint64 thetime;
+    QString str;
+    qDebug() << "to get data...";
+    if (socket->state() == QAbstractSocket::ConnectedState) {
+        if (socket->isOpen()) {
+            qDebug() << "reading...";
+            socket->write(ipselect.toStdString().c_str());
+            socket->waitForBytesWritten();
+            socket->waitForReadyRead();
+            qDebug() << socket->bytesAvailable();
+            while (socket->bytesAvailable()) {
+                str = socket->readLine().replace("\n", "").replace("\r", "");
+                list = str.split(" ");
+                if (list.size() == 2) {
+                    bool ok;
+                    str = list.at(0);
+                    thetime = str.toLongLong(&ok);
+                    str = list.at(1);
+                    timeVector.append(thetime);
+                    float floatValue = str.toFloat(&ok); // convertendo str para float
+                    floatVector.append(floatValue); //passa os valores convertidos para o vetor
+
+                    //qDebug() << thetime << ": " << str;
+
+                    // Passa os dados para o Plotter
+                    //plotter->setData(str, thetime);
+                }
             }
         }
     }
-    else{
-        qDebug() << "Você não está conectado a nenhum servidor";
 
-    }
-}
-//recebendo Ip selecionado pelo cliente e preparando a requisição para o servidor:
-void MainWindow::getIp(QListWidgetItem *_ipselect){
-    ipselect = _ipselect->text();
-    ipselect = "get " + ipselect + " 1\r\n"; //Preparando requisição para o servidor
-    qDebug() << "Ip selecionado: " <<ipselect;
+    //imprimindo os vetores timeVector e strVector
+    /*for(int i = 0; i < timeVector.size(); i++){
+        qDebug() << timeVector.at(i) << ": " << floatVector.at(i); //como imprimir
 
-}
-
-//recebendo os dados solicitados ao servidor:
-void MainWindow::getData(){
-  QString str;
-  QStringList list;
-  qint64 thetime;
-  qDebug() << "to get data...";
-  if(socket->state() == QAbstractSocket::ConnectedState){
-    if(socket->isOpen()){
-      qDebug() << "reading...";
-      socket->write(ipselect.toStdString().c_str());
-      socket->waitForBytesWritten();
-      socket->waitForReadyRead();
-      qDebug() << socket->bytesAvailable();
-      while(socket->bytesAvailable()){
-        str = socket->readLine().replace("\n","").replace("\r","");
-        list = str.split(" ");
-        if(list.size() == 2){
-          bool ok;
-          str = list.at(0);
-          thetime = str.toLongLong(&ok);
-          str = list.at(1);
-          qDebug() << thetime << ": " << str;
-        }
-      }
-    }
-  }
+    } */
+    // pass the floatVector and timeVector to the plotter
+    plotter->update(); // update the plotter widget
+    plotter->setFloatVector(floatVector);
+    plotter->setTimeVector(timeVector);
+    //esvaziar antes de entrar no wille dnv
+    timeVector.clear();
+    floatVector.clear();
 }
 
-
-MainWindow::~MainWindow()
-{
-  delete socket;
-  delete ui;
+MainWindow::~MainWindow() {
+    delete socket;
+    delete ui;
 }

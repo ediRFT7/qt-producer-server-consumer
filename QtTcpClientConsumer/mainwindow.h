@@ -7,20 +7,20 @@
 #include <QTimer>
 #include <QStringList>
 #include <QListWidgetItem>
+#include "plotter.h" // Inclua a classe Plotter
+#include <QVector>
 
 namespace Ui {
 class MainWindow;
 }
 
-class MainWindow : public QMainWindow
-{
-  Q_OBJECT
+class MainWindow : public QMainWindow {
+    Q_OBJECT
 
 public:
-  explicit MainWindow(QWidget *parent = 0);
-  ~MainWindow();
-  
-//  void tcpConnect();
+    explicit MainWindow(QWidget *parent = 0);
+    ~MainWindow();
+
 public slots:
     void getData();
     void tcpConnect();
@@ -30,13 +30,15 @@ public slots:
     void stopSending();
     void update();
     void getIp(QListWidgetItem *_ipselect);
-    //QStringList getIPList();
 
 private:
-  Ui::MainWindow *ui;
-  QTcpSocket *socket;
-  QTimer *timer; // Timer for sending data at intervals
-  QString ipselect;
+    Ui::MainWindow *ui;
+    QTcpSocket *socket;
+    QTimer *timer; // Timer para enviar dados em intervalos
+    QString ipselect;
+    QVector<qint64> timeVector;
+    QVector<float> floatVector;
+    Plotter *plotter; // Ponteiro para a classe Plotter
 };
 
 #endif // MAINWINDOW_H

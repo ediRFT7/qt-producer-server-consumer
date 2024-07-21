@@ -20,6 +20,7 @@
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QWidget>
+#include "plotter.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -36,6 +37,7 @@ public:
     QSlider *horizontalSliderTiming;
     QPushButton *pushButtonStart;
     QPushButton *pushButtonStop;
+    Plotter *widget;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
@@ -52,16 +54,16 @@ public:
         pushButtonGet->setGeometry(QRect(240, 320, 101, 29));
         listWidget = new QListWidget(centralWidget);
         listWidget->setObjectName("listWidget");
-        listWidget->setGeometry(QRect(10, 70, 256, 192));
+        listWidget->setGeometry(QRect(10, 80, 256, 192));
         pushButtonConnect = new QPushButton(centralWidget);
         pushButtonConnect->setObjectName("pushButtonConnect");
-        pushButtonConnect->setGeometry(QRect(10, 40, 89, 25));
+        pushButtonConnect->setGeometry(QRect(10, 50, 89, 25));
         pushButtonDisconnect = new QPushButton(centralWidget);
         pushButtonDisconnect->setObjectName("pushButtonDisconnect");
-        pushButtonDisconnect->setGeometry(QRect(110, 40, 89, 25));
+        pushButtonDisconnect->setGeometry(QRect(110, 50, 89, 25));
         lineEditIp = new QLineEdit(centralWidget);
         lineEditIp->setObjectName("lineEditIp");
-        lineEditIp->setGeometry(QRect(10, 10, 191, 25));
+        lineEditIp->setGeometry(QRect(10, 20, 191, 25));
         pushButtonUpdate = new QPushButton(centralWidget);
         pushButtonUpdate->setObjectName("pushButtonUpdate");
         pushButtonUpdate->setGeometry(QRect(240, 280, 89, 25));
@@ -77,6 +79,9 @@ public:
         pushButtonStop = new QPushButton(centralWidget);
         pushButtonStop->setObjectName("pushButtonStop");
         pushButtonStop->setGeometry(QRect(150, 320, 89, 25));
+        widget = new Plotter(centralWidget);
+        widget->setObjectName("widget");
+        widget->setGeometry(QRect(300, 80, 231, 181));
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName("menuBar");
