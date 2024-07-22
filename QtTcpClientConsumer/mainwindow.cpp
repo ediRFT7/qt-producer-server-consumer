@@ -100,7 +100,7 @@ void MainWindow::update() {
             ui->listWidget->clear();
             while (socket->bytesAvailable()) {
                 iplist << socket->readLine().replace("\n", "").replace("\r", "");
-                qDebug() << "Connected IP: " << iplist;
+               // qDebug() << "Connected IP: " << iplist;
                 ui->listWidget->addItems(iplist);
                 iplist.clear();
             }
